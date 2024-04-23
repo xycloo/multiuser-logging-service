@@ -70,9 +70,6 @@ async fn main() {
     let add_log = warp::path!("log" / i64).and(warp::post()).and(warp::body::json()).and(with_db(arc.clone())).and_then(move |user_id, log: LogClientRequest, state: Arc<Logger<ZephyrLog>>| {
         async move {
             let deserialized = bincode::deserialize(&log.serialized).unwrap();    
-            
-            println!("Adding log {:?}", deserialized);
-            
             state.write_log(user_id, deserialized).await;
             
             Ok::<WithStatus<String>, Rejection>(warp::reply::with_status("success".into(), warp::http::StatusCode::CREATED))
