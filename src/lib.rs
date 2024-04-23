@@ -37,6 +37,11 @@ impl<L: IsLog> Logger<L> {
         }
     }
 
+    pub async fn read_users(&self) -> Vec<i64> {
+        let state = self.state.lock().await;
+        state.keys().map(|x| *x).collect::<Vec<i64>>().clone()
+    }
+
     /// Unified view of all the logs
     pub async fn read_log(&self, user_id: i64) -> Vec<ServiceLog> {
         let mut state = self.state.lock().await;

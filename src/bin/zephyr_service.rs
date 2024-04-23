@@ -70,6 +70,9 @@ async fn main() {
     let add_log = warp::path!("log" / i64).and(warp::post()).and(warp::body::json()).and(with_db(arc.clone())).and_then(move |user_id, log: LogClientRequest, state: Arc<Logger<ZephyrLog>>| {
         async move {
             let deserialized = bincode::deserialize(&log.serialized).unwrap();    
+            
+            println!("Adding log {:?}", deserialized);
+            
             state.write_log(user_id, deserialized).await;
             
             Ok::<WithStatus<String>, Rejection>(warp::reply::with_status("success".into(), warp::http::StatusCode::CREATED))
@@ -104,7 +107,17 @@ async fn main() {
     }
     );
 
-    let routes = warp::post().and(add_log).or(get_debug).or(get_warning).or(get_errors).or(get_logs).or(is_logging).or(is_not_logging);
+    let get_users = warp::path!("users").and(warp::get()).and(with_db(arc.clone())).and_then(move |state: Arc<Logger<ZephyrLog>>| {
+        async move {
+            let users = state.read_users().await;
+            
+            Ok::<WithStatus<String>, Rejection>(warp::reply::with_status(serde_json::to_string(&users).unwrap(), warp::http::StatusCode::OK))
+        }
+    }
+    );
+
+
+    let routes = warp::post().and(add_log).or(get_debug).or(get_warning).or(get_errors).or(get_logs).or(is_logging).or(is_not_logging).or(get_users);
     warp::serve(routes).run(([0,0,0,0], 8082)).await;
 }
 
