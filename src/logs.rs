@@ -52,6 +52,14 @@ impl<L: IsLog> UserLogsGroup<L> {
         }
     }
 
+    pub(crate) fn clear(&mut self) {
+        // TODO: add option to archive logs in storage if needed.
+        
+        self.error.clear();
+        self.warn.clear();
+        self.debug.clear()
+    }
+
     pub(crate) fn add_error(&mut self, log: L) {
         if !self.is_logging {
             return;

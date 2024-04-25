@@ -69,24 +69,28 @@ impl<L: IsLog> Logger<L> {
         }
     }
 
+    // NOTE: this clears past logs.
     pub async fn is_logging(&self, user_id: i64) {
         let mut state = self.state.lock().await;
         
         let user_logs = state.get_mut(&user_id);
 
         if let Some(user_logs) = user_logs {
+            user_logs.clear();
             user_logs.is_logging()
         } else {
             return;
         }
     }
 
+    // NOTE: this clears past logs.
     pub async fn is_not_logging(&self, user_id: i64) {
         let mut state = self.state.lock().await;
         
         let user_logs = state.get_mut(&user_id);
 
         if let Some(user_logs) = user_logs {
+            user_logs.clear();
             user_logs.is_not_logging()
         } else {
             return;
