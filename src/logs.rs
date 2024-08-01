@@ -7,7 +7,7 @@ pub trait IsLog: Clone {
     fn data(&self) -> Option<Vec<u8>>;
     fn level(&self) -> LogLevel;
 }
-
+/* 
 /// Permitted log levels.
 /// More may be added in the future.
 #[derive(Clone, Copy, Serialize, Deserialize, Debug)]
@@ -15,12 +15,30 @@ pub enum LogLevel {
     Error,
     Warning,
     Debug,
+}*/
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[repr(u32)]
+pub enum LogLevel {
+    Debug = 0,
+    Warning = 1,
+    Error = 2,
+}
+
+impl LogLevel {
+    pub fn from_u32(n: u32) -> Self {
+        match n {
+            0 => Self::Debug,
+            1 => Self::Warning,
+            _ => Self::Error,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct LogWrapper<L> {
-    time: i64,
-    inner: L
+    pub time: i64,
+    pub inner: L,
 }
 
 impl<L: IsLog> LogWrapper<L> {
@@ -39,7 +57,7 @@ pub struct UserLogsGroup<L> {
     is_logging: bool,
     error: Vec<LogWrapper<L>>,
     warn: Vec<LogWrapper<L>>,
-    debug: Vec<LogWrapper<L>>
+    debug: Vec<LogWrapper<L>>,
 }
 
 impl<L: IsLog> UserLogsGroup<L> {
@@ -54,7 +72,7 @@ impl<L: IsLog> UserLogsGroup<L> {
 
     pub(crate) fn clear(&mut self) {
         // TODO: add option to archive logs in storage if needed.
-        
+
         self.error.clear();
         self.warn.clear();
         self.debug.clear()
@@ -64,10 +82,13 @@ impl<L: IsLog> UserLogsGroup<L> {
         if !self.is_logging {
             return;
         }
-        
-        let time = std::time::SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs() as i64;
+
+        let time = std::time::SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64;
         let log = LogWrapper { time, inner: log };
-        
+
         self.error.push(log)
     }
 
@@ -76,9 +97,12 @@ impl<L: IsLog> UserLogsGroup<L> {
             return;
         }
 
-        let time = std::time::SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs() as i64;
+        let time = std::time::SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64;
         let log = LogWrapper { time, inner: log };
-        
+
         self.warn.push(log)
     }
 
@@ -86,10 +110,13 @@ impl<L: IsLog> UserLogsGroup<L> {
         if !self.is_logging {
             return;
         }
-        
-        let time = std::time::SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs() as i64;
+
+        let time = std::time::SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64;
         let log = LogWrapper { time, inner: log };
-        
+
         self.debug.push(log)
     }
 
